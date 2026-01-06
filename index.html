@@ -2,13 +2,12 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Answer Sheet Register - Final Version</title>
+    <title>Answer Sheet Register - Backup System</title>
     <style>
         body { font-family: 'SolaimanLipi', Arial, sans-serif; background-color: #f0f2f5; padding: 20px; }
         .no-print { background: #fff; padding: 20px; border-radius: 8px; max-width: 950px; margin: 0 auto 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
         .container { width: 100%; max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border: 1px solid #ddd; }
         
-        /* প্রতিষ্ঠানের হেডার */
         .institute-header { text-align: center; margin-bottom: 5px; }
         .institute-header h3 { margin: 0; font-size: 20px; }
         .institute-header p { margin: 5px 0; font-size: 16px; }
@@ -27,11 +26,10 @@
         .footer { margin-top: 60px; display: flex; justify-content: space-between; }
         .sig-box { border-top: 1px solid black; width: 200px; text-align: center; padding-top: 5px; font-weight: bold; }
 
-        /* প্রিন্ট অপ্টিমাইজেশন ও মার্জিন কন্ট্রোল */
         @media print {
             @page {
                 size: auto;
-                margin: 2mm 10mm 5mm 10mm; /* টপ মার্জিন ২ মিমি করা হয়েছে */
+                margin: 2mm 10mm 5mm 10mm;
             }
             .no-print { display: none; }
             body { background: white; padding: 0 !important; margin: 0 !important; }
@@ -39,20 +37,10 @@
                 border: none; 
                 width: 100%; 
                 max-width: 100%;
-                padding: 10px 0 0 0 !important; /* উপরে মাত্র ১০ পিক্সেল জায়গা রাখা হয়েছে */
+                padding: 10px 0 0 0 !important;
                 margin: 0 !important; 
             }
-            
-            /* ড্রপডাউন অ্যারো লুকানো */
-            select {
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                appearance: none;
-                border: none;
-                background: none;
-                color: black;
-            }
-            /* নম্বর ইনপুটের অ্যারো লুকানো */
+            select { -webkit-appearance: none; -moz-appearance: none; appearance: none; border: none; background: none; color: black; }
             input[type=number]::-webkit-inner-spin-button, 
             input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         }
@@ -62,32 +50,25 @@
 </head>
 <body>
 <div id="login-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-  <h3>অনুগ্রহ করে পাসওয়ার্ড দিন</h3>
+  <h3>অনুগ্রহ করে পাসওয়ার্ড দিন</h3>
   <input type="password" id="pass-input" style="padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #ccc;">
   <button onclick="checkPass()" style="padding:10px 20px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:5px;">Login</button>
-  <p id="error-msg" style="color:red; display:none;">ভুল পাসওয়ার্ড!</p>
+  <p id="error-msg" style="color:red; display:none;">ভুল পাসওয়ার্ড!</p>
 </div>
 
-<script>
-function checkPass() {
-  const input = document.getElementById('pass-input').value;
-  const correctPass = "12345678"; // আপনার পাসওয়ার্ড এখানে লিখুন
-  
-  if (input === correctPass) {
-    document.getElementById('login-screen').style.display = 'none';
-  } else {
-    document.getElementById('error-msg').style.display = 'block';
-  }
-}
-</script>
 <div class="no-print">
     <h3>অটো-সেভ কন্ট্রোল প্যানেল</h3>
     <textarea id="teacherList" style="width: 80%; height: 50px; margin-bottom: 10px;" oninput="saveAllData()">খাজা নূর খোকন, মো: আব্দুর রহিম, মোসা: আমেনা খাতুন</textarea><br>
+    
     <button class="btn" style="background: #007bff;" onclick="addRow()">+ নতুন সারি</button>
     <button class="btn" style="background: #ff9800;" onclick="mergeCells()">স্মার্ট মার্জ</button>
+    
+    <button class="btn" style="background: #6f42c1;" onclick="downloadJSON()">Backup (JSON)</button>
+    <label for="uploadJSON" class="btn" style="background: #fd7e14; display: inline-block;">Restore (Upload)</label>
+    <input type="file" id="uploadJSON" style="display:none;" accept=".json" onchange="uploadJSON(event)">
+    
     <button class="btn" style="background: #28a745;" onclick="window.print()">প্রিন্ট করুন</button>
-    <button class="btn" style="background: #dc3545;" onclick="clearLocalStorage()">সব ডাটা মুছুন (Reset)</button>
-    <p><small>*প্রিন্ট প্রিভিউতে 'More Settings' থেকে 'Headers and Footers' আনচেক করলে মার্জিন একদম জিরো হবে।</small></p>
+    <button class="btn" style="background: #dc3545;" onclick="clearLocalStorage()">Reset All</button>
 </div>
 
 <div class="container">
@@ -131,6 +112,15 @@ function checkPass() {
 </div>
 
 <script>
+    function checkPass() {
+      const input = document.getElementById('pass-input').value;
+      if (input === "12345678") {
+        document.getElementById('login-screen').style.display = 'none';
+      } else {
+        document.getElementById('error-msg').style.display = 'block';
+      }
+    }
+
     function getTeacherOptions() {
         const list = document.getElementById('teacherList').value.split(',');
         let options = '<option value="">শিক্ষক নির্বাচন</option>';
@@ -198,6 +188,33 @@ function checkPass() {
         localStorage.setItem('examData_v1', JSON.stringify(data));
     }
 
+    function downloadJSON() {
+        const savedData = localStorage.getItem('examData_v1');
+        if (!savedData) { alert("কোনো ডাটা নেই!"); return; }
+        const blob = new Blob([savedData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Register_Backup_${new Date().toLocaleDateString()}.json`;
+        a.click();
+    }
+
+    function uploadJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if(confirm("আগের ডাটা মুছে ফাইল থেকে রিস্টোর করবেন?")) {
+                    localStorage.setItem('examData_v1', JSON.stringify(data));
+                    location.reload();
+                }
+            } catch (err) { alert("সঠিক JSON ফাইল নয়!"); }
+        };
+        reader.readAsText(file);
+    }
+
     function loadData() {
         const saved = localStorage.getItem('examData_v1');
         if (saved) {
@@ -207,7 +224,7 @@ function checkPass() {
             document.getElementById('examName').innerText = data.examName;
             document.getElementById('examDate').innerText = data.examDate;
             document.getElementById('teacherList').value = data.teachers;
-            if(data.rows.length > 0) data.rows.forEach(row => addRow(row)); else addRow();
+            if(data.rows && data.rows.length > 0) data.rows.forEach(row => addRow(row)); else addRow();
         } else { addRow(); }
         updateGrandTotal();
     }
@@ -217,8 +234,7 @@ function checkPass() {
     }
 
     function mergeCells() {
-        const tbody = document.getElementById('table-body');
-        const rows = tbody.rows;
+        const rows = document.getElementById('table-body').rows;
         for(let r of rows) {
             r.querySelector('.room-col').style.display = '';
             r.querySelector('.room-col').rowSpan = 1;
@@ -241,10 +257,8 @@ function checkPass() {
                 i += (span - 1);
             }
         }
-        updateGrandTotal();
     }
     window.onload = loadData;
 </script>
-
 </body>
 </html>
